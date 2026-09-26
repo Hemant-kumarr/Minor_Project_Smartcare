@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find Doctors – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/patient/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item active" href="/patient/doctors"><i class="fa-solid fa-user-doctor"></i> Find Doctors</a>
+      <a class="nav-item" href="/patient/appointments"><i class="fa-solid fa-calendar-check"></i> My Appointments</a>
+      <a class="nav-item" href="/patient/symptom-checker"><i class="fa-solid fa-stethoscope"></i> Symptom Checker</a>
+      <a class="nav-item" href="/patient/health-assistant"><i class="fa-solid fa-robot"></i> AI Assistant</a>
+      <a class="nav-item" href="/patient/prescriptions"><i class="fa-solid fa-file-medical"></i> Prescriptions</a>
+      <a class="nav-item" href="/patient/medical-history"><i class="fa-solid fa-clock-rotate-left"></i> Medical History</a>
+      <a class="nav-item" href="/patient/profile"><i class="fa-solid fa-circle-user"></i> Profile</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">?</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">patient</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1>Find Doctors</h1>
+      </div>
+      <div class="topbar-actions"><div class="topbar-avatar" id="topbarAvatar">?</div></div>
+    </header>
+
+    <div class="dash-content">
+      <!-- Specialty filters -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;" id="specialtyFilters">
+        <button class="btn btn-secondary btn-sm specialty-filter-btn active" data-spec="">All Specialties</button>
+        <button class="btn btn-secondary btn-sm specialty-filter-btn" data-spec="General Physician">🩺 General Physician</button>
+        <button class="btn btn-secondary btn-sm specialty-filter-btn" data-spec="Cardiologist">❤️ Cardiologist</button>
+        <button class="btn btn-secondary btn-sm specialty-filter-btn" data-spec="Dermatologist">🧴 Dermatologist</button>
+        <button class="btn btn-secondary btn-sm specialty-filter-btn" data-spec="Pediatrician">👶 Pediatrician</button>
+        <button class="btn btn-secondary btn-sm specialty-filter-btn" data-spec="Orthopedic">🦴 Orthopedic</button>
+        <button class="btn btn-secondary btn-sm specialty-filter-btn" data-spec="Neurologist">🧠 Neurologist</button>
+        <button class="btn btn-secondary btn-sm specialty-filter-btn" data-spec="Psychiatrist">🧘 Psychiatrist</button>
+        <button class="btn btn-secondary btn-sm specialty-filter-btn" data-spec="Gynecologist">🌸 Gynecologist</button>
+      </div>
+
+      <!-- Search & Filter Bar -->
+      <div class="filter-bar">
+        <div class="form-group">
+          <label class="form-label">Search Doctor</label>
+          <input type="text" id="searchInput" class="form-control" placeholder="Search by name or specialization…" />
+        </div>
+        <div class="form-group" style="min-width:180px;max-width:220px;">
+          <label class="form-label">Specialization</label>
+          <select id="specFilter" class="form-control">
+            <option value="">All Specializations</option>
+            <option>General Physician</option><option>Cardiologist</option><option>Dermatologist</option>
+            <option>Pediatrician</option><option>Orthopedic</option><option>Neurologist</option>
+            <option>Psychiatrist</option><option>Gynecologist</option><option>ENT Specialist</option>
+          </select>
+        </div>
+        <div class="form-group" style="align-self:flex-end;">
+          <button class="btn btn-primary" id="searchBtn"><i class="fa-solid fa-search"></i> Search</button>
+        </div>
+        <div class="form-group" style="align-self:flex-end;">
+          <button class="btn btn-secondary" id="clearBtn"><i class="fa-solid fa-xmark"></i> Clear</button>
+        </div>
+      </div>
+
+      <div id="doctorCount" style="font-size:14px;color:var(--gray-500);margin-bottom:16px;"></div>
+      <div class="doctors-grid" id="doctorsGrid">
+        <div style="grid-column:1/-1;" class="loading-overlay"><div class="spinner spinner-dark"></div><p>Loading doctors…</p></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/patient.js"></script>
+<script>
+  if (!requireAuth('patient')) {}
+  else {
+    populateSidebarUser();
+    initMobileSidebar();
+
+    // Read URL params for pre-filter
+    const urlParams = new URLSearchParams(window.location.search);
+    const preSpec = urlParams.get('specialization') || '';
+    if (preSpec) {
+      document.getElementById('specFilter').value = preSpec;
+      // highlight specialty button
+      document.querySelectorAll('.specialty-filter-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.spec === preSpec);
+        if (b.dataset.spec === preSpec) b.classList.replace('btn-secondary', 'btn-primary');
+      });
+    }
+
+    loadDoctors(preSpec);
+
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      const search = document.getElementById('searchInput').value.trim();
+      const spec = document.getElementById('specFilter').value;
+      loadDoctors(spec, search);
+    });
+
+    document.getElementById('searchInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('searchBtn').click();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('specFilter').value = '';
+      document.querySelectorAll('.specialty-filter-btn').forEach(b => {
+        b.classList.remove('active');
+        b.classList.replace('btn-primary', 'btn-secondary');
+      });
+      document.querySelector('[data-spec=""]').classList.add('active');
+      loadDoctors('', '');
+    });
+
+    document.querySelectorAll('.specialty-filter-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.specialty-filter-btn').forEach(b => {
+          b.classList.remove('active');
+          b.classList.replace('btn-primary', 'btn-secondary');
+        });
+        this.classList.add('active');
+        this.classList.replace('btn-secondary', 'btn-primary');
+        document.getElementById('specFilter').value = this.dataset.spec;
+        loadDoctors(this.dataset.spec, document.getElementById('searchInput').value.trim());
+      });
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Doctors – SmartCare AI Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item active" href="/admin/doctors"><i class="fa-solid fa-user-doctor"></i> Doctors</a>
+      <a class="nav-item" href="/admin/users"><i class="fa-solid fa-users"></i> Patients</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">A</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Admin</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">admin</div>
+      </div>
+    </div>
+  </aside>
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1>Manage Doctors</h1>
+      </div>
+      <div class="topbar-actions"><div class="topbar-avatar" id="topbarAvatar">A</div></div>
+    </header>
+    <div class="dash-content">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(this,'')">All</button>
+        <button class="tab-btn" onclick="switchTab(this,'pending')">Pending</button>
+        <button class="tab-btn" onclick="switchTab(this,'approved')">Approved</button>
+        <button class="tab-btn" onclick="switchTab(this,'rejected')">Rejected</button>
+      </div>
+      <div id="doctorsList">
+        <div class="loading-overlay"><div class="spinner spinner-dark"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/js/auth.js"></script>
+<script>
+  if (!requireAuth('admin')) {}
+  else { populateSidebarUser(); initMobileSidebar(); loadDoctors(''); }
+
+  function switchTab(btn, status) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadDoctors(status);
+  }
+
+  async function loadDoctors(status) {
+    const el = document.getElementById('doctorsList');
+    el.innerHTML = `<div class="loading-overlay"><div class="spinner spinner-dark"></div></div>`;
+    try {
+      const url = status ? `/api/admin/doctors?status=${status}` : '/api/admin/doctors';
+      const res = await authFetch(url);
+      const data = await res.json();
+      const docs = data.doctors || [];
+      if (!docs.length) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👨‍⚕️</div><h3>No doctors found</h3></div>`;
+        return;
+      }
+      el.innerHTML = `<div class="table-wrap"><table>
+        <thead><tr><th>Name</th><th>Specialization</th><th>Qualification</th><th>Exp</th><th>Fee</th><th>Reg No.</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>${docs.map(d => `<tr>
+          <td><strong>${d.userId?.name || '—'}</strong><br><span style="font-size:12px;color:var(--gray-400);">${d.userId?.email || ''}</span></td>
+          <td>${d.specialization}</td>
+          <td>${d.qualification}</td>
+          <td>${d.experience} yrs</td>
+          <td>₹${d.consultationFee}</td>
+          <td style="font-size:12px;">${d.medicalRegistrationNumber}</td>
+          <td><span class="badge badge-${d.verificationStatus}">${d.verificationStatus}</span></td>
+          <td>
+            ${d.verificationStatus !== 'approved' ? `<button class="btn btn-success btn-sm" style="margin-bottom:4px;" onclick="verifyDoc('${d._id}','approved',this)"><i class="fa-solid fa-check"></i></button>` : ''}
+            ${d.verificationStatus !== 'rejected' ? `<button class="btn btn-danger btn-sm" onclick="verifyDoc('${d._id}','rejected',this)"><i class="fa-solid fa-xmark"></i></button>` : ''}
+          </td>
+        </tr>`).join('')}</tbody>
+      </table></div>`;
+    } catch (e) {
+      el.innerHTML = `<p style="color:var(--danger);padding:20px;">Failed to load doctors.</p>`;
+    }
+  }
+
+  async function verifyDoc(id, status, btn) {
+    btn.disabled = true;
+    try {
+      const res = await authFetch(`/api/admin/doctors/${id}/verify`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(`Doctor ${status}!`, 'success');
+        const activeTab = document.querySelector('.tab-btn.active');
+        const tabStatus = activeTab?.textContent?.toLowerCase();
+        const map = { all: '', pending: 'pending', approved: 'approved', rejected: 'rejected' };
+        loadDoctors(map[tabStatus] || '');
+      } else {
+        showToast(data.message, 'error');
+        btn.disabled = false;
+      }
+    } catch(e) { showToast('Server error.', 'error'); btn.disabled = false; }
+  }
+</script>
+</body>
+</html>

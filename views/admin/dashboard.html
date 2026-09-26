@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item" href="/admin/doctors"><i class="fa-solid fa-user-doctor"></i> Doctors</a>
+      <a class="nav-item" href="/admin/users"><i class="fa-solid fa-users"></i> Patients</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">A</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Admin</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">admin</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1>Admin Dashboard</h1>
+      </div>
+      <div class="topbar-actions">
+        <span style="font-size:13px;color:var(--gray-500);">SmartCare AI Control Panel</span>
+        <div class="topbar-avatar" id="topbarAvatar">A</div>
+      </div>
+    </header>
+
+    <div class="dash-content">
+      <div class="welcome-card" style="background:linear-gradient(135deg,#1e293b,#334155);">
+        <div>
+          <h2 style="color:white;">Admin Control Panel</h2>
+          <p style="opacity:.85;">Manage doctors, patients and platform statistics.</p>
+          <div class="welcome-card-actions">
+            <a href="/admin/doctors" class="btn btn-outline-white btn-sm"><i class="fa-solid fa-user-doctor"></i> Manage Doctors</a>
+            <a href="/admin/users" class="btn btn-outline-white btn-sm"><i class="fa-solid fa-users"></i> View Patients</a>
+          </div>
+        </div>
+        <div class="welcome-emoji">⚙️</div>
+      </div>
+
+      <div class="stats-grid" id="adminStats">
+        <div class="stat-card"><div class="stat-card-icon blue"><i class="fa-solid fa-users"></i></div><div class="stat-card-info"><div class="stat-card-value" id="statPatients">–</div><div class="stat-card-label">Total Patients</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon green"><i class="fa-solid fa-user-doctor"></i></div><div class="stat-card-info"><div class="stat-card-value" id="statDoctors">–</div><div class="stat-card-label">Approved Doctors</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon orange"><i class="fa-solid fa-hourglass-half"></i></div><div class="stat-card-info"><div class="stat-card-value" id="statPending">–</div><div class="stat-card-label">Pending Approvals</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon purple"><i class="fa-solid fa-calendar-check"></i></div><div class="stat-card-info"><div class="stat-card-value" id="statAppts">–</div><div class="stat-card-label">Total Appointments</div></div></div>
+      </div>
+
+      <!-- Pending doctor approvals -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-hourglass-half" style="color:var(--warning);"></i> Pending Doctor Approvals</h3>
+          <a href="/admin/doctors" class="btn btn-secondary btn-sm">View All Doctors</a>
+        </div>
+        <div class="card-body" id="pendingDoctors">
+          <div class="loading-overlay"><div class="spinner spinner-dark"></div></div>
+        </div>
+      </div>
+
+      <!-- Recent appointments -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-calendar" style="color:var(--primary);"></i> Recent Appointments</h3>
+        </div>
+        <div class="card-body" id="recentAppts">
+          <div class="loading-overlay"><div class="spinner spinner-dark"></div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth.js"></script>
+<script>
+  if (!requireAuth('admin')) {}
+  else {
+    populateSidebarUser();
+    initMobileSidebar();
+    loadAdminDashboard();
+  }
+
+  async function loadAdminDashboard() {
+    try {
+      const [statsRes, doctorsRes, apptsRes] = await Promise.all([
+        authFetch('/api/admin/stats'),
+        authFetch('/api/admin/doctors?status=pending'),
+        authFetch('/api/admin/appointments')
+      ]);
+
+      // Stats
+      const statsData = await statsRes.json();
+      if (statsData.success) {
+        const s = statsData.stats;
+        document.getElementById('statPatients').textContent = s.totalPatients;
+        document.getElementById('statDoctors').textContent = s.totalDoctors;
+        document.getElementById('statPending').textContent = s.pendingDoctors;
+        document.getElementById('statAppts').textContent = s.totalAppointments;
+      }
+
+      // Pending doctors
+      const docData = await doctorsRes.json();
+      const pendingEl = document.getElementById('pendingDoctors');
+      const pending = docData.doctors || [];
+      if (!pending.length) {
+        pendingEl.innerHTML = `<div class="empty-state" style="padding:24px;"><div class="empty-state-icon">✅</div>
+          <h3>No pending approvals</h3><p>All doctor registrations have been reviewed.</p></div>`;
+      } else {
+        pendingEl.innerHTML = pending.map(d => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gray-100);gap:12px;flex-wrap:wrap;">
+            <div>
+              <p style="font-weight:600;">${d.userId?.name || 'Doctor'}</p>
+              <p style="font-size:13px;color:var(--gray-500);">${d.specialization} &bull; ${d.qualification}</p>
+              <p style="font-size:12px;color:var(--gray-400);">${d.userId?.email || ''} &bull; Reg: ${d.medicalRegistrationNumber}</p>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-success btn-sm" onclick="verifyDoctor('${d._id}','approved',this)">
+                <i class="fa-solid fa-check"></i> Approve
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="verifyDoctor('${d._id}','rejected',this)">
+                <i class="fa-solid fa-xmark"></i> Reject
+              </button>
+            </div>
+          </div>`).join('');
+      }
+
+      // Recent appointments
+      const apptData = await apptsRes.json();
+      const apptEl = document.getElementById('recentAppts');
+      const appts = (apptData.appointments || []).slice(0, 8);
+      if (!appts.length) {
+        apptEl.innerHTML = `<p style="color:var(--gray-500);font-size:14px;">No appointments yet.</p>`;
+      } else {
+        apptEl.innerHTML = `<div class="table-wrap"><table>
+          <thead><tr><th>Patient</th><th>Doctor</th><th>Date</th><th>Time</th><th>Status</th></tr></thead>
+          <tbody>${appts.map(a => `<tr>
+            <td>${a.patientId?.name || '—'}</td>
+            <td>Dr. ${a.doctorId?.userId?.name || '—'}</td>
+            <td>${formatDate(a.date)}</td>
+            <td>${a.time}</td>
+            <td>${statusBadge(a.status)}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>`;
+      }
+    } catch (err) {
+      console.error('Admin dashboard error:', err);
+    }
+  }
+
+  async function verifyDoctor(id, status, btn) {
+    btn.disabled = true;
+    try {
+      const res = await authFetch(`/api/admin/doctors/${id}/verify`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(`Doctor ${status}!`, 'success');
+        loadAdminDashboard();
+      } else {
+        showToast(data.message || 'Failed.', 'error');
+        btn.disabled = false;
+      }
+    } catch (e) {
+      showToast('Server error.', 'error');
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>

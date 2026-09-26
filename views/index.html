@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartCare AI – Intelligent Online Doctor Consultation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- ===================== NAVBAR ===================== -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-brand">
+      <div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      SmartCare <span>AI</span>
+    </a>
+    <ul class="navbar-nav" id="navLinks">
+      <li><a href="/" class="active">Home</a></li>
+      <li><a href="/patient/doctors">Find Doctors</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#specialties">Specialties</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+    <div class="navbar-actions" id="navActions">
+      <a href="/login" class="btn btn-outline btn-sm">Login</a>
+      <a href="/register" class="btn btn-primary btn-sm">Sign Up</a>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-tag"><i class="fa-solid fa-robot"></i> AI-Powered Healthcare</div>
+      <h1 class="hero-title">Your Health, Connected with <span>Smart Care</span></h1>
+      <p class="hero-subtitle">Consult trusted doctors, manage appointments, and get AI-powered health guidance from one simple platform.</p>
+      <div class="hero-actions">
+        <a href="/patient/doctors" class="btn btn-primary btn-lg"><i class="fa-solid fa-user-doctor"></i> Find a Doctor</a>
+        <a href="/register" class="btn btn-outline btn-lg"><i class="fa-solid fa-stethoscope"></i> Check Your Symptoms</a>
+      </div>
+    </div>
+    <div class="hero-image-wrap">
+      <div class="hero-illustration">
+        <div class="hero-illus-inner">
+          <div class="hero-illus-icon">🩺</div>
+          <h3>Trusted Healthcare Online</h3>
+          <p>Connect with verified doctors from the comfort of your home</p>
+          <div class="hero-illus-badges">
+            <span class="hero-badge"><i class="fa-solid fa-shield-check"></i> Verified Doctors</span>
+            <span class="hero-badge"><i class="fa-solid fa-robot"></i> AI Assisted</span>
+            <span class="hero-badge"><i class="fa-solid fa-lock"></i> Secure</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== STATS ===================== -->
+<section class="stats-bar">
+  <div class="container">
+    <div class="stat-item"><span class="stat-number">50+</span><span class="stat-label">Verified Doctors</span></div>
+    <div class="stat-item"><span class="stat-number">10+</span><span class="stat-label">Specialties</span></div>
+    <div class="stat-item"><span class="stat-number">500+</span><span class="stat-label">Consultations</span></div>
+    <div class="stat-item"><span class="stat-number">24/7</span><span class="stat-label">AI Health Assistant</span></div>
+  </div>
+</section>
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<section class="section" id="how-it-works">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Simple Process</span>
+      <h2>How It Works</h2>
+      <p>Get a doctor consultation in four simple steps – it's quick, easy, and hassle-free.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <div class="step-icon">📝</div>
+        <h3>Create Your Account</h3>
+        <p>Register as a patient and complete your basic health profile in minutes.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <div class="step-icon">🔍</div>
+        <h3>Find a Doctor</h3>
+        <p>Search and filter doctors by specialization, experience, and availability.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <div class="step-icon">📅</div>
+        <h3>Book Appointment</h3>
+        <p>Select an available date and time slot that works best for you.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">4</div>
+        <div class="step-icon">💊</div>
+        <h3>Get Consultation</h3>
+        <p>Consult your doctor and receive a digital prescription directly to your dashboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FEATURES ===================== -->
+<section class="section" id="features" style="background: var(--gray-50);">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Platform Features</span>
+      <h2>Everything You Need for Better Health</h2>
+      <p>A complete healthcare platform built to make doctor consultations simple, smart, and accessible.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>Find Doctors</h3>
+        <p>Browse verified doctors by specialization, experience, and consultation fees. Read profiles before booking.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <h3>Online Appointment Booking</h3>
+        <p>View real-time availability and book appointments instantly. No waiting, no calls needed.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>AI Symptom Checker</h3>
+        <p>Describe your symptoms and get AI-powered general health guidance and specialist recommendations.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <h3>AI Health Assistant</h3>
+        <p>Chat with our AI assistant for general health information and wellness guidance anytime, 24/7.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>Digital Prescription</h3>
+        <p>Doctors create digital prescriptions post-consultation. View and print them from your dashboard anytime.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📂</div>
+        <h3>Medical History</h3>
+        <p>All your consultations, prescriptions, and health records in one secure, organized place.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SPECIALTIES ===================== -->
+<section class="section" id="specialties">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Medical Specialties</span>
+      <h2>Find the Right Specialist</h2>
+      <p>We have verified doctors across all major medical specialties.</p>
+    </div>
+    <div class="specialties-grid">
+      <div class="specialty-card" onclick="filterBySpecialty('General Physician')">
+        <div class="specialty-icon">🩺</div>
+        <h4>General Physician</h4>
+      </div>
+      <div class="specialty-card" onclick="filterBySpecialty('Cardiologist')">
+        <div class="specialty-icon">❤️</div>
+        <h4>Cardiologist</h4>
+      </div>
+      <div class="specialty-card" onclick="filterBySpecialty('Dermatologist')">
+        <div class="specialty-icon">🧴</div>
+        <h4>Dermatologist</h4>
+      </div>
+      <div class="specialty-card" onclick="filterBySpecialty('Pediatrician')">
+        <div class="specialty-icon">👶</div>
+        <h4>Pediatrician</h4>
+      </div>
+      <div class="specialty-card" onclick="filterBySpecialty('Orthopedic')">
+        <div class="specialty-icon">🦴</div>
+        <h4>Orthopedic</h4>
+      </div>
+      <div class="specialty-card" onclick="filterBySpecialty('Neurologist')">
+        <div class="specialty-icon">🧠</div>
+        <h4>Neurologist</h4>
+      </div>
+      <div class="specialty-card" onclick="filterBySpecialty('Psychiatrist')">
+        <div class="specialty-icon">🧘</div>
+        <h4>Psychiatrist</h4>
+      </div>
+      <div class="specialty-card" onclick="filterBySpecialty('Gynecologist')">
+        <div class="specialty-icon">🌸</div>
+        <h4>Gynecologist</h4>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== AI CTA ===================== -->
+<section class="section" style="background: linear-gradient(135deg, #1d4ed8, #0891b2);">
+  <div class="container" style="text-align:center; color:white;">
+    <div style="font-size:52px; margin-bottom:16px;">🤖</div>
+    <h2 style="color:white; margin-bottom:12px;">Try Our AI Health Assistant</h2>
+    <p style="color:rgba(255,255,255,0.85); max-width:500px; margin:0 auto 28px;">Get instant general health guidance, understand your symptoms, and find out which specialist to consult.</p>
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <a href="/register" class="btn btn-outline-white btn-lg"><i class="fa-solid fa-robot"></i> Check Symptoms</a>
+      <a href="/register" class="btn btn-outline-white btn-lg"><i class="fa-solid fa-comments"></i> Chat with AI</a>
+    </div>
+    <p style="font-size:12px; color:rgba(255,255,255,0.6); margin-top:16px;"><i class="fa-solid fa-circle-info"></i> AI features provide general information only. Always consult a qualified doctor for medical advice.</p>
+  </div>
+</section>
+
+<!-- ===================== ABOUT ===================== -->
+<section class="section" id="about">
+  <div class="container">
+    <div style="max-width:680px; margin:0 auto; text-align:center;">
+      <span class="section-tag">About SmartCare AI</span>
+      <h2 style="margin-bottom:16px;">Built to Make Healthcare Accessible</h2>
+      <p style="margin-bottom:16px;">SmartCare AI is a student-built healthcare consultation platform developed as a B.Tech CSE minor project. It demonstrates full-stack web development, REST API design, MongoDB database management, role-based authentication, and integration with Google's Gemini AI.</p>
+      <p>The platform connects patients with verified doctors for online consultations, appointment booking, and digital prescription management – all in one secure, easy-to-use system.</p>
+      <div style="display:flex; gap:12px; justify-content:center; margin-top:28px; flex-wrap:wrap;">
+        <a href="/register" class="btn btn-primary">Get Started Free</a>
+        <a href="/doctor-register" class="btn btn-outline">Join as Doctor</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">
+          <div class="footer-brand-name">🩺 SmartCare AI</div>
+        </div>
+        <p class="footer-desc">An intelligent online doctor consultation platform. Connect with verified doctors, manage appointments, and get AI-powered health guidance.</p>
+      </div>
+      <div>
+        <h4 class="footer-heading">For Patients</h4>
+        <ul class="footer-links">
+          <li><a href="/register">Create Account</a></li>
+          <li><a href="/patient/doctors">Find Doctors</a></li>
+          <li><a href="/login">My Appointments</a></li>
+          <li><a href="/login">AI Symptom Checker</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-heading">For Doctors</h4>
+        <ul class="footer-links">
+          <li><a href="/doctor-register">Join as Doctor</a></li>
+          <li><a href="/login">Doctor Login</a></li>
+          <li><a href="/login">Manage Appointments</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-heading">Platform</h4>
+        <ul class="footer-links">
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#specialties">Specialties</a></li>
+          <li><a href="#about">About</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 SmartCare AI. B.Tech CSE Minor Project.</span>
+      <span>Built with Node.js, Express, MongoDB & Gemini AI</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Navbar hamburger
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('navLinks');
+  const navActions = document.getElementById('navActions');
+  hamburger.addEventListener('click', () => {
+    navLinks.classList.toggle('open');
+    navActions.classList.toggle('open');
+  });
+
+  // Specialty filter – redirect to doctors page
+  function filterBySpecialty(spec) {
+    window.location.href = `/patient/doctors?specialization=${encodeURIComponent(spec)}`;
+  }
+
+  // Redirect logged-in users to their dashboard
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+  if (token && role) {
+    const dashMap = { patient: '/patient/dashboard', doctor: '/doctor/dashboard', admin: '/admin/dashboard' };
+    const dash = dashMap[role];
+    if (dash) {
+      // Replace nav actions with dashboard link
+      document.getElementById('navActions').innerHTML =
+        `<a href="${dash}" class="btn btn-primary btn-sm"><i class="fa-solid fa-gauge"></i> Dashboard</a>`;
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Appointments – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/patient/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item" href="/patient/doctors"><i class="fa-solid fa-user-doctor"></i> Find Doctors</a>
+      <a class="nav-item active" href="/patient/appointments"><i class="fa-solid fa-calendar-check"></i> My Appointments</a>
+      <a class="nav-item" href="/patient/symptom-checker"><i class="fa-solid fa-stethoscope"></i> Symptom Checker</a>
+      <a class="nav-item" href="/patient/health-assistant"><i class="fa-solid fa-robot"></i> AI Assistant</a>
+      <a class="nav-item" href="/patient/prescriptions"><i class="fa-solid fa-file-medical"></i> Prescriptions</a>
+      <a class="nav-item" href="/patient/medical-history"><i class="fa-solid fa-clock-rotate-left"></i> Medical History</a>
+      <a class="nav-item" href="/patient/profile"><i class="fa-solid fa-circle-user"></i> Profile</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">?</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">patient</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1>My Appointments</h1>
+      </div>
+      <div class="topbar-actions">
+        <a href="/patient/doctors" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> New Appointment</a>
+        <div class="topbar-avatar" id="topbarAvatar">?</div>
+      </div>
+    </header>
+
+    <div class="dash-content">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="all" onclick="switchTab(this,'all')">All</button>
+        <button class="tab-btn" data-tab="upcoming" onclick="switchTab(this,'upcoming')">Upcoming</button>
+        <button class="tab-btn" data-tab="completed" onclick="switchTab(this,'completed')">Completed</button>
+        <button class="tab-btn" data-tab="cancelled" onclick="switchTab(this,'cancelled')">Cancelled</button>
+      </div>
+      <div id="appointmentsList">
+        <div class="loading-overlay"><div class="spinner spinner-dark"></div><p>Loading…</p></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal-backdrop" id="cancelModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>Cancel Appointment</h3>
+      <button class="modal-close" onclick="document.getElementById('cancelModal').classList.remove('open')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:14px;color:var(--gray-600);">Are you sure you want to cancel this appointment?</p>
+      <div class="form-group">
+        <label class="form-label">Reason (optional)</label>
+        <textarea id="cancelReason" class="form-control" rows="2" placeholder="Why are you cancelling?"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="document.getElementById('cancelModal').classList.remove('open')">Keep</button>
+      <button class="btn btn-danger" id="confirmCancelBtn">Yes, Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/patient.js"></script>
+<script src="/js/appointments.js"></script>
+<script>
+  if (!requireAuth('patient')) {}
+  else {
+    populateSidebarUser();
+    initMobileSidebar();
+    loadPatientAppointments('all');
+  }
+
+  function switchTab(btn, type) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadPatientAppointments(type);
+  }
+</script>
+</body>
+</html>

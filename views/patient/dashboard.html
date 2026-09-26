@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patient Dashboard – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="dash-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand">
+      <div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      SmartCare <span>AI</span>
+    </a>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" href="/patient/dashboard" data-path="/patient/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item" href="/patient/doctors" data-path="/patient/doctors"><i class="fa-solid fa-user-doctor"></i> Find Doctors</a>
+      <a class="nav-item" href="/patient/appointments" data-path="/patient/appointments"><i class="fa-solid fa-calendar-check"></i> My Appointments</a>
+      <a class="nav-item" href="/patient/symptom-checker" data-path="/patient/symptom-checker"><i class="fa-solid fa-stethoscope"></i> Symptom Checker</a>
+      <a class="nav-item" href="/patient/health-assistant" data-path="/patient/health-assistant"><i class="fa-solid fa-robot"></i> AI Assistant</a>
+      <a class="nav-item" href="/patient/prescriptions" data-path="/patient/prescriptions"><i class="fa-solid fa-file-medical"></i> Prescriptions</a>
+      <a class="nav-item" href="/patient/medical-history" data-path="/patient/medical-history"><i class="fa-solid fa-clock-rotate-left"></i> Medical History</a>
+      <a class="nav-item" href="/patient/profile" data-path="/patient/profile"><i class="fa-solid fa-circle-user"></i> Profile</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">?</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">patient</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1>Dashboard</h1>
+      </div>
+      <div class="topbar-actions">
+        <a href="/patient/doctors" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Book Appointment</a>
+        <div class="topbar-avatar" id="topbarAvatar">?</div>
+      </div>
+    </header>
+
+    <div class="dash-content">
+      <!-- Welcome Card -->
+      <div class="welcome-card">
+        <div>
+          <h2 id="welcomeMsg">Good morning!</h2>
+          <p>Take care of your health today.</p>
+          <div class="welcome-card-actions">
+            <a href="/patient/doctors" class="btn btn-outline-white btn-sm"><i class="fa-solid fa-search"></i> Find Doctor</a>
+            <a href="/patient/symptom-checker" class="btn btn-outline-white btn-sm"><i class="fa-solid fa-stethoscope"></i> Check Symptoms</a>
+          </div>
+        </div>
+        <div class="welcome-emoji">👋</div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-card-icon blue"><i class="fa-solid fa-calendar-check"></i></div><div class="stat-card-info"><div class="stat-card-value" id="statUpcoming">–</div><div class="stat-card-label">Upcoming Appointments</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon green"><i class="fa-solid fa-circle-check"></i></div><div class="stat-card-info"><div class="stat-card-value" id="statCompleted">–</div><div class="stat-card-label">Completed Consultations</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon orange"><i class="fa-solid fa-file-medical"></i></div><div class="stat-card-info"><div class="stat-card-value" id="statPrescriptions">–</div><div class="stat-card-label">Prescriptions</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon purple"><i class="fa-solid fa-stethoscope"></i></div><div class="stat-card-info"><div class="stat-card-value" id="statTotal">–</div><div class="stat-card-label">Total Consultations</div></div></div>
+      </div>
+
+      <div class="dash-grid dash-grid-3">
+        <!-- Next Appointment -->
+        <div class="next-appt-card">
+          <h3>Next Appointment</h3>
+          <div id="nextApptContent">
+            <div class="loading-overlay"><div class="spinner spinner-dark"></div></div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div>
+          <h3 style="margin-bottom:14px;font-size:14px;color:var(--gray-500);font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Quick Actions</h3>
+          <div class="quick-actions">
+            <a href="/patient/doctors" class="quick-action-btn"><i class="fa-solid fa-user-doctor"></i> Find Doctor</a>
+            <a href="/patient/appointments" class="quick-action-btn"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+            <a href="/patient/symptom-checker" class="quick-action-btn"><i class="fa-solid fa-stethoscope"></i> Check Symptoms</a>
+            <a href="/patient/health-assistant" class="quick-action-btn"><i class="fa-solid fa-robot"></i> AI Assistant</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Appointments -->
+      <div class="card" style="margin-top:20px;">
+        <div class="card-header">
+          <h3>Recent Appointments</h3>
+          <a href="/patient/appointments" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        <div class="card-body" id="recentAppts">
+          <div class="loading-overlay"><div class="spinner spinner-dark"></div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/patient.js"></script>
+<script>
+  if (!requireAuth('patient')) {}
+  else {
+    populateSidebarUser();
+    initMobileSidebar();
+
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('welcomeMsg').textContent = `${greeting}, ${getUserName() || 'there'}! 👋`;
+
+    loadPatientDashboard();
+  }
+</script>
+</body>
+</html>

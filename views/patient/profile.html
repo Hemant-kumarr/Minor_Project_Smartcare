@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/patient/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item" href="/patient/doctors"><i class="fa-solid fa-user-doctor"></i> Find Doctors</a>
+      <a class="nav-item" href="/patient/appointments"><i class="fa-solid fa-calendar-check"></i> My Appointments</a>
+      <a class="nav-item" href="/patient/symptom-checker"><i class="fa-solid fa-stethoscope"></i> Symptom Checker</a>
+      <a class="nav-item" href="/patient/health-assistant"><i class="fa-solid fa-robot"></i> AI Assistant</a>
+      <a class="nav-item" href="/patient/prescriptions"><i class="fa-solid fa-file-medical"></i> Prescriptions</a>
+      <a class="nav-item" href="/patient/medical-history"><i class="fa-solid fa-clock-rotate-left"></i> Medical History</a>
+      <a class="nav-item active" href="/patient/profile"><i class="fa-solid fa-circle-user"></i> Profile</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">?</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">patient</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1>My Profile</h1>
+      </div>
+      <div class="topbar-actions"><div class="topbar-avatar" id="topbarAvatar">?</div></div>
+    </header>
+
+    <div class="dash-content">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+        <div class="card">
+          <div class="card-header"><h3>Personal Information</h3></div>
+          <div class="card-body">
+            <div id="profileAlert"></div>
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="name" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" id="email" class="form-control" disabled style="background:var(--gray-50);" />
+              <span class="form-hint">Email cannot be changed.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" id="phone" class="form-control" maxlength="10" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" id="dob" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Gender</label>
+                <select id="gender" class="form-control">
+                  <option value="">Select</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" id="saveProfileBtn" onclick="saveProfile()">
+              <span id="saveBtnText"><i class="fa-solid fa-floppy-disk"></i> Save Changes</span>
+              <span id="saveSpinner" class="spinner" style="display:none;"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h3>Change Password</h3></div>
+          <div class="card-body">
+            <div id="pwdAlert"></div>
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <input type="password" id="currentPwd" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input type="password" id="newPwd" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" id="confirmPwd" class="form-control" />
+            </div>
+            <button class="btn btn-outline btn-block" onclick="changePassword()">
+              <i class="fa-solid fa-key"></i> Update Password
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/patient.js"></script>
+<script>
+  if (!requireAuth('patient')) {}
+  else {
+    populateSidebarUser();
+    initMobileSidebar();
+    loadProfile();
+  }
+
+  async function loadProfile() {
+    try {
+      const res = await authFetch('/api/auth/me');
+      if (!res) return;
+      const data = await res.json();
+      const u = data.user;
+      document.getElementById('name').value = u.name || '';
+      document.getElementById('email').value = u.email || '';
+      document.getElementById('phone').value = u.phone || '';
+      document.getElementById('dob').value = u.dateOfBirth ? u.dateOfBirth.split('T')[0] : '';
+      document.getElementById('gender').value = u.gender || '';
+    } catch (err) { console.error(err); }
+  }
+
+  async function saveProfile() {
+    const alertEl = document.getElementById('profileAlert');
+    alertEl.innerHTML = '';
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const dob = document.getElementById('dob').value;
+    const gender = document.getElementById('gender').value;
+
+    if (!name) { alertEl.innerHTML = `<div class="alert alert-error">Name is required.</div>`; return; }
+
+    const btn = document.getElementById('saveProfileBtn');
+    btn.disabled = true;
+    document.getElementById('saveBtnText').style.display = 'none';
+    document.getElementById('saveSpinner').style.display = 'inline-block';
+
+    try {
+      const res = await authFetch('/api/auth/profile', {
+        method: 'PUT',
+        body: JSON.stringify({ name, phone: phone||undefined, dateOfBirth: dob||undefined, gender: gender||undefined })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('userName', data.user.name);
+        populateSidebarUser();
+        alertEl.innerHTML = `<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Profile updated.</div>`;
+        showToast('Profile saved!', 'success');
+      } else {
+        alertEl.innerHTML = `<div class="alert alert-error">${data.message}</div>`;
+      }
+    } catch(e) {
+      alertEl.innerHTML = `<div class="alert alert-error">Server error.</div>`;
+    } finally {
+      btn.disabled = false;
+      document.getElementById('saveBtnText').style.display = 'inline';
+      document.getElementById('saveSpinner').style.display = 'none';
+    }
+  }
+
+  async function changePassword() {
+    const alertEl = document.getElementById('pwdAlert');
+    alertEl.innerHTML = '';
+    const cur = document.getElementById('currentPwd').value;
+    const nw = document.getElementById('newPwd').value;
+    const conf = document.getElementById('confirmPwd').value;
+    if (!cur || !nw) { alertEl.innerHTML = `<div class="alert alert-error">All fields required.</div>`; return; }
+    if (nw.length < 6) { alertEl.innerHTML = `<div class="alert alert-error">New password must be 6+ chars.</div>`; return; }
+    if (nw !== conf) { alertEl.innerHTML = `<div class="alert alert-error">Passwords don't match.</div>`; return; }
+    try {
+      const res = await authFetch('/api/auth/change-password', {
+        method: 'PUT',
+        body: JSON.stringify({ currentPassword: cur, newPassword: nw })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alertEl.innerHTML = `<div class="alert alert-success">Password changed.</div>`;
+        document.getElementById('currentPwd').value = '';
+        document.getElementById('newPwd').value = '';
+        document.getElementById('confirmPwd').value = '';
+        showToast('Password updated!', 'success');
+      } else {
+        alertEl.innerHTML = `<div class="alert alert-error">${data.message}</div>`;
+      }
+    } catch(e) {
+      alertEl.innerHTML = `<div class="alert alert-error">Server error.</div>`;
+    }
+  }
+</script>
+</body>
+</html>

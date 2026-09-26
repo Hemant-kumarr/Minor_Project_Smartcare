@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Profile – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/patient/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item active" href="/patient/doctors"><i class="fa-solid fa-user-doctor"></i> Find Doctors</a>
+      <a class="nav-item" href="/patient/appointments"><i class="fa-solid fa-calendar-check"></i> My Appointments</a>
+      <a class="nav-item" href="/patient/symptom-checker"><i class="fa-solid fa-stethoscope"></i> Symptom Checker</a>
+      <a class="nav-item" href="/patient/health-assistant"><i class="fa-solid fa-robot"></i> AI Assistant</a>
+      <a class="nav-item" href="/patient/prescriptions"><i class="fa-solid fa-file-medical"></i> Prescriptions</a>
+      <a class="nav-item" href="/patient/medical-history"><i class="fa-solid fa-clock-rotate-left"></i> Medical History</a>
+      <a class="nav-item" href="/patient/profile"><i class="fa-solid fa-circle-user"></i> Profile</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">?</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">patient</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <a href="/patient/doctors" style="color:var(--gray-500);font-size:14px;"><i class="fa-solid fa-arrow-left"></i> Back</a>
+        <h1>Doctor Profile</h1>
+      </div>
+      <div class="topbar-actions"><div class="topbar-avatar" id="topbarAvatar">?</div></div>
+    </header>
+
+    <div class="dash-content">
+      <div id="profileContent">
+        <div class="loading-overlay"><div class="spinner spinner-dark"></div><p>Loading profile…</p></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="modal-backdrop" id="bookingModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-calendar-plus"></i> Book Appointment</h3>
+      <button class="modal-close" onclick="closeBookingModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="bookingAlert"></div>
+      <div class="form-group">
+        <label class="form-label">Select Date <span style="color:var(--danger)">*</span></label>
+        <input type="date" id="appointmentDate" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Available Time Slots</label>
+        <div id="slotsContainer" style="display:flex;flex-wrap:wrap;gap:8px;min-height:40px;padding:8px 0;">
+          <p style="color:var(--gray-400);font-size:13px;">Select a date first</p>
+        </div>
+        <input type="hidden" id="selectedSlot" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reason for Consultation <span style="color:var(--danger)">*</span></label>
+        <textarea id="reason" class="form-control" rows="3" placeholder="Describe your symptoms or reason…"></textarea>
+        <span class="form-error" id="reasonError"></span>
+      </div>
+      <div id="bookingConfirm" style="display:none;background:var(--primary-light);border-radius:var(--radius);padding:14px;margin-top:8px;">
+        <p style="font-weight:600;color:var(--primary);margin-bottom:6px;"><i class="fa-solid fa-circle-check"></i> Confirm Booking</p>
+        <p style="font-size:13px;color:var(--gray-700);" id="confirmText"></p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeBookingModal()">Cancel</button>
+      <button class="btn btn-primary" id="bookBtn" onclick="confirmBooking()">
+        <span id="bookBtnText"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</span>
+        <span id="bookSpinner" class="spinner" style="display:none;"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/patient.js"></script>
+<script>
+  if (!requireAuth('patient')) {}
+  else {
+    populateSidebarUser();
+    initMobileSidebar();
+    const doctorId = new URLSearchParams(window.location.search).get('id');
+    if (!doctorId) { window.location.href = '/patient/doctors'; }
+    else { loadDoctorProfile(doctorId); }
+  }
+</script>
+</body>
+</html>

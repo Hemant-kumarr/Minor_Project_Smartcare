@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Health Assistant – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/patient/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item" href="/patient/doctors"><i class="fa-solid fa-user-doctor"></i> Find Doctors</a>
+      <a class="nav-item" href="/patient/appointments"><i class="fa-solid fa-calendar-check"></i> My Appointments</a>
+      <a class="nav-item" href="/patient/symptom-checker"><i class="fa-solid fa-stethoscope"></i> Symptom Checker</a>
+      <a class="nav-item active" href="/patient/health-assistant"><i class="fa-solid fa-robot"></i> AI Assistant</a>
+      <a class="nav-item" href="/patient/prescriptions"><i class="fa-solid fa-file-medical"></i> Prescriptions</a>
+      <a class="nav-item" href="/patient/medical-history"><i class="fa-solid fa-clock-rotate-left"></i> Medical History</a>
+      <a class="nav-item" href="/patient/profile"><i class="fa-solid fa-circle-user"></i> Profile</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">?</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">patient</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1>AI Health Assistant</h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary btn-sm" onclick="clearChat()"><i class="fa-solid fa-rotate-left"></i> Clear Chat</button>
+        <div class="topbar-avatar" id="topbarAvatar">?</div>
+      </div>
+    </header>
+
+    <div class="dash-content" style="display:flex;flex-direction:column;height:calc(100vh - 60px);padding:16px 28px;">
+      <!-- Disclaimer bar -->
+      <div class="ai-disclaimer" style="margin-bottom:12px;flex-shrink:0;">
+        <i class="fa-solid fa-circle-info" style="flex-shrink:0;"></i>
+        <span>SmartCare AI Assistant provides <strong>general health information only</strong>. It does not diagnose conditions, prescribe medicines, or replace a qualified doctor.</span>
+      </div>
+
+      <!-- Chat container -->
+      <div class="chat-container" style="flex:1;">
+        <div class="chat-header">
+          <div class="chat-header-avatar"><i class="fa-solid fa-robot"></i></div>
+          <div class="chat-header-info">
+            <h3>SmartCare AI Assistant</h3>
+            <p id="chatStatus">Online – Ready to help</p>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;"></span>
+            <span style="font-size:12px;opacity:0.85;">Active</span>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-body" id="chatBody">
+          <!-- Welcome message inserted by JS -->
+        </div>
+
+        <!-- Suggested questions -->
+        <div class="chat-suggestions" id="suggestionsBar">
+          <button class="chat-suggestion" onclick="sendSuggestion(this)">How can I improve my sleep?</button>
+          <button class="chat-suggestion" onclick="sendSuggestion(this)">Common causes of headaches?</button>
+          <button class="chat-suggestion" onclick="sendSuggestion(this)">Which doctor for skin problems?</button>
+          <button class="chat-suggestion" onclick="sendSuggestion(this)">How to stay hydrated?</button>
+          <button class="chat-suggestion" onclick="sendSuggestion(this)">Foods good for heart health?</button>
+        </div>
+
+        <!-- Input area -->
+        <div class="chat-input-area">
+          <textarea id="chatInput" placeholder="Ask a health question…" rows="1"
+            onkeydown="handleChatKey(event)" oninput="autoResizeTextarea(this)"></textarea>
+          <button class="chat-send-btn" id="sendBtn" onclick="sendChatMessage()" title="Send">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/ai.js"></script>
+<script>
+  if (!requireAuth('patient')) {}
+  else {
+    populateSidebarUser();
+    initMobileSidebar();
+    initChat();
+  }
+
+  function handleChatKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendChatMessage();
+    }
+  }
+
+  function autoResizeTextarea(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+  }
+
+  function sendSuggestion(btn) {
+    document.getElementById('chatInput').value = btn.textContent.trim();
+    // Hide suggestions after first use
+    document.getElementById('suggestionsBar').style.display = 'none';
+    sendChatMessage();
+  }
+
+  function clearChat() {
+    chatHistory = [];
+    document.getElementById('chatBody').innerHTML = '';
+    document.getElementById('suggestionsBar').style.display = 'flex';
+    initChat();
+    showToast('Chat cleared.', 'info');
+  }
+</script>
+</body>
+</html>

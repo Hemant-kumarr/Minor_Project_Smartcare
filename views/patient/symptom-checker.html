@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Symptom Checker – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/patient/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item" href="/patient/doctors"><i class="fa-solid fa-user-doctor"></i> Find Doctors</a>
+      <a class="nav-item" href="/patient/appointments"><i class="fa-solid fa-calendar-check"></i> My Appointments</a>
+      <a class="nav-item active" href="/patient/symptom-checker"><i class="fa-solid fa-stethoscope"></i> Symptom Checker</a>
+      <a class="nav-item" href="/patient/health-assistant"><i class="fa-solid fa-robot"></i> AI Assistant</a>
+      <a class="nav-item" href="/patient/prescriptions"><i class="fa-solid fa-file-medical"></i> Prescriptions</a>
+      <a class="nav-item" href="/patient/medical-history"><i class="fa-solid fa-clock-rotate-left"></i> Medical History</a>
+      <a class="nav-item" href="/patient/profile"><i class="fa-solid fa-circle-user"></i> Profile</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">?</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">patient</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1>AI Symptom Checker</h1>
+      </div>
+      <div class="topbar-actions"><div class="topbar-avatar" id="topbarAvatar">?</div></div>
+    </header>
+
+    <div class="dash-content">
+      <!-- Disclaimer -->
+      <div class="ai-disclaimer">
+        <i class="fa-solid fa-triangle-exclamation" style="flex-shrink:0;margin-top:1px;"></i>
+        <span><strong>Important Disclaimer:</strong> This AI tool provides general health information only and is <strong>NOT a medical diagnosis</strong>. Always consult a qualified healthcare professional for medical concerns. If you believe you are experiencing a medical emergency, call <strong>112</strong> or visit the nearest hospital immediately.</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;">
+        <!-- Input Form -->
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-stethoscope" style="color:var(--primary);"></i> Describe Your Symptoms</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Main Symptoms <span style="color:var(--danger)">*</span></label>
+              <textarea id="symptoms" class="form-control" rows="4"
+                placeholder="Describe your symptoms in detail. e.g. I have had fever, headache, and cough for the past 3 days."></textarea>
+              <span class="form-error" id="symptomsError"></span>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Duration</label>
+                <select id="duration" class="form-control">
+                  <option value="">Select duration</option>
+                  <option>Less than 1 day</option>
+                  <option>1–2 days</option>
+                  <option>3–5 days</option>
+                  <option>1 week</option>
+                  <option>2 weeks</option>
+                  <option>More than 2 weeks</option>
+                  <option>Recurring / chronic</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Your Age</label>
+                <input type="number" id="age" class="form-control" placeholder="e.g. 28" min="1" max="120" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Additional Information <span style="color:var(--gray-400);font-weight:400;">(optional)</span></label>
+              <textarea id="additionalInfo" class="form-control" rows="2"
+                placeholder="Any existing conditions, medications, allergies, or other relevant information…"></textarea>
+            </div>
+
+            <!-- Example symptom chips -->
+            <div style="margin-bottom:16px;">
+              <p style="font-size:12px;font-weight:600;color:var(--gray-500);margin-bottom:8px;">Quick Examples:</p>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <button type="button" class="chat-suggestion" onclick="fillSymptom('Fever, headache, and body aches for 2 days')">Fever & headache</button>
+                <button type="button" class="chat-suggestion" onclick="fillSymptom('Chest pain and shortness of breath')">Chest pain</button>
+                <button type="button" class="chat-suggestion" onclick="fillSymptom('Skin rash and itching on arms')">Skin rash</button>
+                <button type="button" class="chat-suggestion" onclick="fillSymptom('Persistent cough and throat irritation for a week')">Cough</button>
+                <button type="button" class="chat-suggestion" onclick="fillSymptom('Lower back pain radiating to the leg')">Back pain</button>
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-block btn-lg" id="checkBtn" onclick="runSymptomCheck()">
+              <span id="checkBtnText"><i class="fa-solid fa-magnifying-glass-plus"></i> Analyse Symptoms</span>
+              <span id="checkSpinner" class="spinner" style="display:none;"></span>
+            </button>
+            <button class="btn btn-secondary btn-block" style="margin-top:8px;" onclick="clearSymptomForm()">
+              <i class="fa-solid fa-rotate-left"></i> Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div id="resultPanel">
+          <!-- Empty state -->
+          <div class="card" id="resultEmpty">
+            <div class="card-body">
+              <div class="empty-state" style="padding:40px 16px;">
+                <div class="empty-state-icon">🔍</div>
+                <h3>Results will appear here</h3>
+                <p>Fill in your symptoms on the left and click "Analyse Symptoms" to get general health guidance.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Result content (hidden until analysis runs) -->
+          <div id="resultContent" style="display:none;">
+            <!-- Emergency alert (shown only if urgent) -->
+            <div id="emergencyAlert" class="emergency-alert" style="display:none;">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span>These symptoms may indicate a serious condition. Please seek immediate medical attention or call <strong>112</strong>.</span>
+            </div>
+
+            <div class="symptom-result">
+              <div class="symptom-result-header">
+                <i class="fa-solid fa-robot"></i>
+                <div>
+                  <p style="font-weight:700;font-size:15px;margin-bottom:2px;">AI Health Guidance</p>
+                  <p style="font-size:12px;opacity:0.85;">General information only – not a diagnosis</p>
+                </div>
+              </div>
+              <div class="symptom-result-body">
+                <div class="result-section">
+                  <h4>Symptom Summary</h4>
+                  <p id="resSummary"></p>
+                </div>
+                <div class="result-section">
+                  <h4>General Information</h4>
+                  <p id="resInfo"></p>
+                </div>
+                <div class="result-section" style="display:flex;gap:24px;flex-wrap:wrap;">
+                  <div>
+                    <h4>Recommended Specialist</h4>
+                    <p style="font-weight:600;color:var(--primary);font-size:15px;" id="resSpecialist"></p>
+                  </div>
+                  <div>
+                    <h4>Urgency Level</h4>
+                    <span id="resUrgency" class="urgency-badge urgency-moderate">Moderate</span>
+                  </div>
+                </div>
+                <div class="result-section">
+                  <h4>Suggested Next Step</h4>
+                  <p id="resNextStep"></p>
+                </div>
+                <div style="background:var(--gray-50);border-radius:var(--radius);padding:12px;font-size:12px;color:var(--gray-500);">
+                  <i class="fa-solid fa-circle-info"></i> <span id="resDisclaimer"></span>
+                </div>
+                <div style="margin-top:16px;">
+                  <button class="btn btn-primary btn-block" id="findDoctorBtn" onclick="goToRecommendedDoctor()">
+                    <i class="fa-solid fa-user-doctor"></i> Find Recommended Doctors
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/ai.js"></script>
+<script>
+  if (!requireAuth('patient')) {}
+  else { populateSidebarUser(); initMobileSidebar(); }
+
+  function fillSymptom(text) {
+    document.getElementById('symptoms').value = text;
+    document.getElementById('symptoms').focus();
+  }
+
+  function clearSymptomForm() {
+    document.getElementById('symptoms').value = '';
+    document.getElementById('duration').value = '';
+    document.getElementById('age').value = '';
+    document.getElementById('additionalInfo').value = '';
+    document.getElementById('symptomsError').textContent = '';
+    document.getElementById('resultEmpty').style.display = 'block';
+    document.getElementById('resultContent').style.display = 'none';
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      <h1>SmartCare <span>AI</span></h1>
+      <p>Sign in to your account</p>
+    </div>
+
+    <div id="alertBox"></div>
+
+    <form id="loginForm" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="email">Email Address</label>
+        <input type="email" id="email" class="form-control" placeholder="you@example.com" required autocomplete="email" />
+        <span class="form-error" id="emailError"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <div style="position:relative;">
+          <input type="password" id="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password" style="padding-right:42px;" />
+          <button type="button" id="togglePwd" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:15px;">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+        <span class="form-error" id="passwordError"></span>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginBtn">
+        <span id="loginBtnText">Sign In</span>
+        <span id="loginSpinner" class="spinner" style="display:none;"></span>
+      </button>
+    </form>
+
+    <div class="auth-divider"><span>or continue with</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <a href="/register" class="btn btn-secondary btn-block"><i class="fa-solid fa-user"></i> Patient</a>
+      <a href="/doctor-register" class="btn btn-secondary btn-block"><i class="fa-solid fa-user-doctor"></i> Doctor</a>
+    </div>
+
+    <div class="auth-footer">
+      Don't have an account? <a href="/register">Create one</a>
+    </div>
+    <div class="auth-footer" style="margin-top:6px;">
+      <a href="/" style="color:var(--gray-400);"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+    </div>
+
+    <!-- Demo credentials hint -->
+    <div style="margin-top:20px;padding:12px;background:var(--gray-50);border-radius:var(--radius);border:1px solid var(--gray-200);">
+      <p style="font-size:12px;color:var(--gray-500);font-weight:600;margin-bottom:6px;">🧪 Demo Credentials (after seeding)</p>
+      <p style="font-size:11px;color:var(--gray-400);margin-bottom:2px;">Patient: patient@demo.com / demo123</p>
+      <p style="font-size:11px;color:var(--gray-400);margin-bottom:2px;">Doctor: dr.sharma@demo.com / demo123</p>
+      <p style="font-size:11px;color:var(--gray-400);">Admin: admin@smartcare.com / admin123</p>
+    </div>
+  </div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script>
+  // Redirect if already logged in
+  if (localStorage.getItem('token')) {
+    const role = localStorage.getItem('role');
+    const map = { patient: '/patient/dashboard', doctor: '/doctor/dashboard', admin: '/admin/dashboard' };
+    window.location.href = map[role] || '/';
+  }
+
+  const form = document.getElementById('loginForm');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginBtnText = document.getElementById('loginBtnText');
+  const loginSpinner = document.getElementById('loginSpinner');
+
+  // Toggle password visibility
+  document.getElementById('togglePwd').addEventListener('click', function () {
+    const pwd = document.getElementById('password');
+    const icon = this.querySelector('i');
+    if (pwd.type === 'password') {
+      pwd.type = 'text';
+      icon.className = 'fa-solid fa-eye-slash';
+    } else {
+      pwd.type = 'password';
+      icon.className = 'fa-solid fa-eye';
+    }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearErrors();
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    let valid = true;
+
+    if (!email) { showError('emailError', 'Email is required.'); valid = false; }
+    else if (!/\S+@\S+\.\S+/.test(email)) { showError('emailError', 'Enter a valid email.'); valid = false; }
+    if (!password) { showError('passwordError', 'Password is required.'); valid = false; }
+    if (!valid) return;
+
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showAlert(data.message || 'Login failed.', 'error');
+        return;
+      }
+
+      // Store auth data
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('role', data.user.role);
+      localStorage.setItem('userId', data.user.id);
+      localStorage.setItem('userName', data.user.name);
+
+      showToast('Welcome back, ' + data.user.name + '!', 'success');
+      setTimeout(() => { window.location.href = data.redirectUrl; }, 600);
+    } catch (err) {
+      showAlert('Unable to connect to server. Please try again.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  function setLoading(state) {
+    loginBtn.disabled = state;
+    loginBtnText.textContent = state ? 'Signing in…' : 'Sign In';
+    loginSpinner.style.display = state ? 'inline-block' : 'none';
+  }
+  function clearErrors() {
+    ['emailError', 'passwordError'].forEach(id => document.getElementById(id).textContent = '');
+    document.getElementById('alertBox').innerHTML = '';
+  }
+  function showError(id, msg) { document.getElementById(id).textContent = msg; }
+  function showAlert(msg, type) {
+    const icons = { error: 'circle-xmark', success: 'circle-check', warning: 'triangle-exclamation' };
+    document.getElementById('alertBox').innerHTML =
+      `<div class="alert alert-${type}"><i class="fa-solid fa-${icons[type]||'info'}"></i>${msg}</div>`;
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Registration – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="auth-page" style="padding:32px 20px;">
+  <div class="auth-card auth-card-wide">
+    <div class="auth-logo">
+      <div class="logo-icon"><i class="fa-solid fa-user-doctor"></i></div>
+      <h1>Doctor <span>Registration</span></h1>
+      <p>Join SmartCare AI as a verified doctor</p>
+    </div>
+
+    <div id="alertBox"></div>
+
+    <form id="doctorRegForm" novalidate enctype="multipart/form-data">
+
+      <!-- Step indicators -->
+      <div style="display:flex;gap:0;margin-bottom:28px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--gray-200);">
+        <div class="step-indicator active" id="step1-ind" style="flex:1;text-align:center;padding:10px;font-size:13px;font-weight:600;background:var(--primary);color:white;">
+          1. Personal Info
+        </div>
+        <div class="step-indicator" id="step2-ind" style="flex:1;text-align:center;padding:10px;font-size:13px;font-weight:600;background:var(--gray-100);color:var(--gray-500);">
+          2. Professional Info
+        </div>
+        <div class="step-indicator" id="step3-ind" style="flex:1;text-align:center;padding:10px;font-size:13px;font-weight:600;background:var(--gray-100);color:var(--gray-500);">
+          3. Account Setup
+        </div>
+      </div>
+
+      <!-- Step 1: Personal Info -->
+      <div id="step1">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Full Name <span style="color:var(--danger)">*</span></label>
+            <input type="text" id="name" class="form-control" placeholder="Dr. Priya Sharma" required />
+            <span class="form-error" id="nameError"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address <span style="color:var(--danger)">*</span></label>
+            <input type="email" id="email" class="form-control" placeholder="dr.priya@hospital.com" required />
+            <span class="form-error" id="emailError"></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" id="phone" class="form-control" placeholder="9876543210" maxlength="10" />
+          <span class="form-error" id="phoneError"></span>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+          <button type="button" class="btn btn-primary" onclick="goToStep(2)">Next <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- Step 2: Professional Info -->
+      <div id="step2" style="display:none;">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Specialization <span style="color:var(--danger)">*</span></label>
+            <select id="specialization" class="form-control" required>
+              <option value="">Select specialization</option>
+              <option>General Physician</option>
+              <option>Cardiologist</option>
+              <option>Dermatologist</option>
+              <option>Pediatrician</option>
+              <option>Orthopedic</option>
+              <option>Neurologist</option>
+              <option>Psychiatrist</option>
+              <option>Gynecologist</option>
+              <option>ENT Specialist</option>
+              <option>Ophthalmologist</option>
+              <option>Urologist</option>
+              <option>Oncologist</option>
+              <option>Diabetologist</option>
+            </select>
+            <span class="form-error" id="specializationError"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qualification <span style="color:var(--danger)">*</span></label>
+            <input type="text" id="qualification" class="form-control" placeholder="MBBS, MD – Internal Medicine" required />
+            <span class="form-error" id="qualificationError"></span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Experience (years) <span style="color:var(--danger)">*</span></label>
+            <input type="number" id="experience" class="form-control" placeholder="8" min="0" max="60" required />
+            <span class="form-error" id="experienceError"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Consultation Fee (₹) <span style="color:var(--danger)">*</span></label>
+            <input type="number" id="consultationFee" class="form-control" placeholder="500" min="0" required />
+            <span class="form-error" id="feeError"></span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Medical Registration Number <span style="color:var(--danger)">*</span></label>
+            <input type="text" id="regNumber" class="form-control" placeholder="MH-12345" required />
+            <span class="form-error" id="regError"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Clinic / Hospital Name</label>
+            <input type="text" id="clinicName" class="form-control" placeholder="City Medical Center" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">About Yourself</label>
+          <textarea id="about" class="form-control" rows="3" placeholder="Brief introduction about your practice, expertise, and approach to patient care…"></textarea>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;">
+          <button type="button" class="btn btn-secondary" onclick="goToStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+          <button type="button" class="btn btn-primary" onclick="goToStep(3)">Next <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- Step 3: Account Setup -->
+      <div id="step3" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">Profile Photo</label>
+          <input type="file" id="profileImage" class="form-control" accept="image/jpeg,image/png,image/webp" />
+          <span class="form-hint">Optional. Max 2MB. JPG/PNG/WebP only.</span>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Password <span style="color:var(--danger)">*</span></label>
+            <div style="position:relative;">
+              <input type="password" id="password" class="form-control" placeholder="Min. 6 characters" required style="padding-right:42px;" />
+              <button type="button" class="toggle-pwd" data-target="password" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:15px;"><i class="fa-solid fa-eye"></i></button>
+            </div>
+            <span class="form-error" id="passwordError"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm Password <span style="color:var(--danger)">*</span></label>
+            <div style="position:relative;">
+              <input type="password" id="confirmPassword" class="form-control" placeholder="Re-enter password" required style="padding-right:42px;" />
+              <button type="button" class="toggle-pwd" data-target="confirmPassword" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:15px;"><i class="fa-solid fa-eye"></i></button>
+            </div>
+            <span class="form-error" id="confirmPasswordError"></span>
+          </div>
+        </div>
+
+        <div style="background:var(--primary-light);border-radius:var(--radius);padding:12px 14px;margin-bottom:18px;font-size:13px;color:var(--primary);">
+          <i class="fa-solid fa-circle-info"></i> Your account will be <strong>auto-approved</strong> for this demo. In production, admin review would be required.
+        </div>
+
+        <div style="display:flex;justify-content:space-between;margin-top:8px;">
+          <button type="button" class="btn btn-secondary" onclick="goToStep(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <span id="submitBtnText"><i class="fa-solid fa-check"></i> Create Doctor Account</span>
+            <span id="submitSpinner" class="spinner" style="display:none;"></span>
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="auth-footer" style="margin-top:16px;">
+      Already registered? <a href="/login">Sign in</a>
+    </div>
+    <div class="auth-footer" style="margin-top:6px;">
+      <a href="/" style="color:var(--gray-400);"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script>
+  if (localStorage.getItem('token')) {
+    const role = localStorage.getItem('role');
+    window.location.href = role === 'doctor' ? '/doctor/dashboard' : '/patient/dashboard';
+  }
+
+  let currentStep = 1;
+
+  function goToStep(step) {
+    if (step === 2 && !validateStep1()) return;
+    if (step === 3 && !validateStep2()) return;
+
+    document.getElementById(`step${currentStep}`).style.display = 'none';
+    document.getElementById(`step${currentStep}-ind`).style.background = 'var(--gray-100)';
+    document.getElementById(`step${currentStep}-ind`).style.color = 'var(--gray-500)';
+
+    currentStep = step;
+    document.getElementById(`step${currentStep}`).style.display = 'block';
+    document.getElementById(`step${currentStep}-ind`).style.background = 'var(--primary)';
+    document.getElementById(`step${currentStep}-ind`).style.color = 'white';
+  }
+
+  function validateStep1() {
+    let valid = true;
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    document.getElementById('nameError').textContent = '';
+    document.getElementById('emailError').textContent = '';
+    document.getElementById('phoneError').textContent = '';
+    if (!name || name.length < 2) { document.getElementById('nameError').textContent = 'Full name is required.'; valid = false; }
+    if (!email || !/\S+@\S+\.\S+/.test(email)) { document.getElementById('emailError').textContent = 'Valid email is required.'; valid = false; }
+    if (phone && !/^[6-9]\d{9}$/.test(phone)) { document.getElementById('phoneError').textContent = 'Enter valid 10-digit number.'; valid = false; }
+    return valid;
+  }
+
+  function validateStep2() {
+    let valid = true;
+    const spec = document.getElementById('specialization').value;
+    const qual = document.getElementById('qualification').value.trim();
+    const exp = document.getElementById('experience').value;
+    const fee = document.getElementById('consultationFee').value;
+    const reg = document.getElementById('regNumber').value.trim();
+    ['specializationError','qualificationError','experienceError','feeError','regError'].forEach(id => document.getElementById(id).textContent = '');
+    if (!spec) { document.getElementById('specializationError').textContent = 'Select a specialization.'; valid = false; }
+    if (!qual) { document.getElementById('qualificationError').textContent = 'Qualification is required.'; valid = false; }
+    if (!exp || Number(exp) < 0) { document.getElementById('experienceError').textContent = 'Enter valid experience.'; valid = false; }
+    if (!fee || Number(fee) < 0) { document.getElementById('feeError').textContent = 'Enter valid fee.'; valid = false; }
+    if (!reg) { document.getElementById('regError').textContent = 'Registration number is required.'; valid = false; }
+    return valid;
+  }
+
+  // Toggle password buttons
+  document.querySelectorAll('.toggle-pwd').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const inp = document.getElementById(this.dataset.target);
+      const icon = this.querySelector('i');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      icon.className = inp.type === 'text' ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+    });
+  });
+
+  document.getElementById('doctorRegForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    document.getElementById('passwordError').textContent = '';
+    document.getElementById('confirmPasswordError').textContent = '';
+    document.getElementById('alertBox').innerHTML = '';
+
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    let valid = true;
+    if (!password || password.length < 6) { document.getElementById('passwordError').textContent = 'Password must be at least 6 characters.'; valid = false; }
+    if (password !== confirmPassword) { document.getElementById('confirmPasswordError').textContent = 'Passwords do not match.'; valid = false; }
+    if (!valid) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    document.getElementById('submitBtnText').style.display = 'none';
+    document.getElementById('submitSpinner').style.display = 'inline-block';
+
+    try {
+      const formData = new FormData();
+      formData.append('name', document.getElementById('name').value.trim());
+      formData.append('email', document.getElementById('email').value.trim());
+      formData.append('phone', document.getElementById('phone').value.trim());
+      formData.append('specialization', document.getElementById('specialization').value);
+      formData.append('qualification', document.getElementById('qualification').value.trim());
+      formData.append('experience', document.getElementById('experience').value);
+      formData.append('consultationFee', document.getElementById('consultationFee').value);
+      formData.append('medicalRegistrationNumber', document.getElementById('regNumber').value.trim());
+      formData.append('clinicName', document.getElementById('clinicName').value.trim());
+      formData.append('about', document.getElementById('about').value.trim());
+      formData.append('password', password);
+      const imgFile = document.getElementById('profileImage').files[0];
+      if (imgFile) formData.append('profileImage', imgFile);
+
+      const res = await fetch('/api/auth/register-doctor', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        document.getElementById('alertBox').innerHTML = `<div class="alert alert-error"><i class="fa-solid fa-circle-xmark"></i>${data.message}</div>`;
+        return;
+      }
+      document.getElementById('alertBox').innerHTML = `<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i>Doctor account created! Redirecting to login…</div>`;
+      setTimeout(() => window.location.href = '/login', 2000);
+    } catch (err) {
+      document.getElementById('alertBox').innerHTML = `<div class="alert alert-error"><i class="fa-solid fa-circle-xmark"></i>Server error. Please try again.</div>`;
+    } finally {
+      btn.disabled = false;
+      document.getElementById('submitBtnText').style.display = 'inline';
+      document.getElementById('submitSpinner').style.display = 'none';
+    }
+  });
+</script>
+</body>
+</html>

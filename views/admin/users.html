@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patients – SmartCare AI Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item" href="/admin/doctors"><i class="fa-solid fa-user-doctor"></i> Doctors</a>
+      <a class="nav-item active" href="/admin/users"><i class="fa-solid fa-users"></i> Patients</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">A</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Admin</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">admin</div>
+      </div>
+    </div>
+  </aside>
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1>Registered Patients</h1>
+      </div>
+      <div class="topbar-actions"><div class="topbar-avatar" id="topbarAvatar">A</div></div>
+    </header>
+    <div class="dash-content">
+      <div id="patientsList">
+        <div class="loading-overlay"><div class="spinner spinner-dark"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/js/auth.js"></script>
+<script>
+  if (!requireAuth('admin')) {}
+  else { populateSidebarUser(); initMobileSidebar(); loadPatients(); }
+
+  async function loadPatients() {
+    const el = document.getElementById('patientsList');
+    try {
+      const res = await authFetch('/api/admin/patients');
+      const data = await res.json();
+      const patients = data.patients || [];
+      if (!patients.length) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👥</div><h3>No patients registered yet</h3></div>`;
+        return;
+      }
+      el.innerHTML = `
+        <p style="font-size:14px;color:var(--gray-500);margin-bottom:12px;">${patients.length} registered patients</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Gender</th><th>Joined</th></tr></thead>
+          <tbody>${patients.map(p => `<tr>
+            <td><strong>${p.name}</strong></td>
+            <td>${p.email}</td>
+            <td>${p.phone || '—'}</td>
+            <td style="text-transform:capitalize;">${p.gender || '—'}</td>
+            <td>${formatDate(p.createdAt)}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>`;
+    } catch (e) {
+      el.innerHTML = `<p style="color:var(--danger);padding:20px;">Failed to load patients.</p>`;
+    }
+  }
+</script>
+</body>
+</html>

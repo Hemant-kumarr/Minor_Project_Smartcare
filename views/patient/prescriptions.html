@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Prescriptions – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/patient/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item" href="/patient/doctors"><i class="fa-solid fa-user-doctor"></i> Find Doctors</a>
+      <a class="nav-item" href="/patient/appointments"><i class="fa-solid fa-calendar-check"></i> My Appointments</a>
+      <a class="nav-item" href="/patient/symptom-checker"><i class="fa-solid fa-stethoscope"></i> Symptom Checker</a>
+      <a class="nav-item" href="/patient/health-assistant"><i class="fa-solid fa-robot"></i> AI Assistant</a>
+      <a class="nav-item active" href="/patient/prescriptions"><i class="fa-solid fa-file-medical"></i> Prescriptions</a>
+      <a class="nav-item" href="/patient/medical-history"><i class="fa-solid fa-clock-rotate-left"></i> Medical History</a>
+      <a class="nav-item" href="/patient/profile"><i class="fa-solid fa-circle-user"></i> Profile</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">?</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">patient</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1>My Prescriptions</h1>
+      </div>
+      <div class="topbar-actions"><div class="topbar-avatar" id="topbarAvatar">?</div></div>
+    </header>
+
+    <div class="dash-content">
+      <div id="prescriptionsList">
+        <div class="loading-overlay"><div class="spinner spinner-dark"></div><p>Loading…</p></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Prescription View Modal -->
+<div class="modal-backdrop" id="rxModal" style="align-items:flex-start;padding-top:30px;">
+  <div class="modal" style="max-width:700px;max-height:88vh;overflow-y:auto;">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-file-medical"></i> Prescription</h3>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-secondary btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Print</button>
+        <button class="modal-close" onclick="document.getElementById('rxModal').classList.remove('open')">&times;</button>
+      </div>
+    </div>
+    <div class="modal-body" id="rxModalContent"></div>
+  </div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/patient.js"></script>
+<script>
+  if (!requireAuth('patient')) {}
+  else {
+    populateSidebarUser();
+    initMobileSidebar();
+    loadMyPrescriptions();
+  }
+
+  async function loadMyPrescriptions() {
+    const el = document.getElementById('prescriptionsList');
+    try {
+      const res = await authFetch('/api/prescriptions/patient');
+      if (!res) return;
+      const data = await res.json();
+      const rxs = data.prescriptions || [];
+
+      if (!rxs.length) {
+        el.innerHTML = `<div class="empty-state">
+          <div class="empty-state-icon">💊</div>
+          <h3>No prescriptions yet</h3>
+          <p>Prescriptions from your doctors will appear here after consultations.</p>
+          <a href="/patient/doctors" class="btn btn-primary btn-sm">Find a Doctor</a>
+        </div>`;
+        return;
+      }
+
+      el.innerHTML = rxs.map(rx => `
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+              <div>
+                <h3 style="margin-bottom:4px;">Dr. ${rx.doctorName || ''}</h3>
+                <p style="color:var(--primary);font-size:13px;font-weight:600;margin-bottom:6px;">${rx.doctorSpecialization || ''}</p>
+                <p style="font-size:13px;color:var(--gray-600);margin-bottom:4px;"><strong>Diagnosis:</strong> ${rx.diagnosis}</p>
+                <p style="font-size:13px;color:var(--gray-500);">
+                  <i class="fa-solid fa-calendar"></i> ${formatDate(rx.appointmentDate)}
+                  &bull; ${rx.medicines?.length || 0} medicine(s)
+                </p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="viewPrescription('${rx.id}')">
+                <i class="fa-solid fa-eye"></i> View
+              </button>
+            </div>
+          </div>
+        </div>`).join('');
+    } catch (err) {
+      el.innerHTML = `<p style="color:var(--danger);padding:20px;">Failed to load prescriptions.</p>`;
+    }
+  }
+
+  async function viewPrescription(id) {
+    const content = document.getElementById('rxModalContent');
+    content.innerHTML = `<div class="loading-overlay"><div class="spinner spinner-dark"></div></div>`;
+    document.getElementById('rxModal').classList.add('open');
+
+    try {
+      const res = await authFetch(`/api/prescriptions/${id}`);
+      const data = await res.json();
+      if (!res.ok || !data.prescription) { content.innerHTML = '<p>Failed to load prescription.</p>'; return; }
+
+      const rx = data.prescription;
+      const p = rx.patientId;
+      const d = rx.doctorId;
+      const dUser = d?.userId || {};
+
+      content.innerHTML = `
+        <div class="prescription-print">
+          <div class="rx-header">
+            <div>
+              <div class="rx-brand">🩺 SmartCare AI</div>
+              <p class="rx-brand" style="font-size:13px;">Digital Prescription</p>
+            </div>
+            <div style="text-align:right;font-size:13px;color:var(--gray-500);">
+              <p>Date: ${formatDate(rx.appointmentId?.date || rx.createdAt)}</p>
+              <p>Time: ${rx.appointmentId?.time || ''}</p>
+            </div>
+          </div>
+          <div class="rx-info-grid">
+            <div class="rx-info-box">
+              <h4>Patient</h4>
+              <div class="rx-info-row"><strong>${p?.name || getUserName()}</strong></div>
+              <div class="rx-info-row">${p?.gender ? p.gender.charAt(0).toUpperCase() + p.gender.slice(1) : ''} ${p?.dateOfBirth ? ', Age ' + calcAge(p.dateOfBirth) : ''}</div>
+              <div class="rx-info-row">${p?.phone || ''}</div>
+            </div>
+            <div class="rx-info-box">
+              <h4>Doctor</h4>
+              <div class="rx-info-row"><strong>Dr. ${dUser?.name || ''}</strong></div>
+              <div class="rx-info-row">${d?.specialization || ''}</div>
+              <div class="rx-info-row">${d?.qualification || ''}</div>
+              <div class="rx-info-row">Reg: ${d?.medicalRegistrationNumber || ''}</div>
+            </div>
+          </div>
+          <div class="rx-diagnosis">
+            <h4>Diagnosis</h4>
+            <p>${rx.diagnosis}</p>
+          </div>
+          ${rx.medicines?.length ? `
+          <table class="medicines-table">
+            <thead><tr><th>#</th><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>Instructions</th></tr></thead>
+            <tbody>${rx.medicines.map((m, i) => `
+              <tr><td>${i+1}</td><td><strong>${m.medicineName}</strong></td>
+              <td>${m.dosage}</td><td>${m.frequency}</td><td>${m.duration}</td>
+              <td>${m.instructions || '—'}</td></tr>`).join('')}
+            </tbody>
+          </table>` : ''}
+          ${rx.doctorNotes ? `<div style="background:var(--gray-50);border-radius:var(--radius);padding:14px;margin-bottom:16px;">
+            <strong style="font-size:13px;">Doctor's Notes:</strong>
+            <p style="font-size:13px;margin-top:4px;">${rx.doctorNotes}</p>
+          </div>` : ''}
+          ${rx.followUpDate ? `<p style="font-size:13px;margin-bottom:16px;"><strong>Follow-up Date:</strong> ${formatDate(rx.followUpDate)}</p>` : ''}
+          <div class="rx-footer">
+            <p style="font-size:12px;color:var(--gray-400);">SmartCare AI – Digital Health Records</p>
+            <div class="rx-signature">
+              <div class="sig-line"></div>
+              <p>Dr. ${dUser?.name || ''}</p>
+              <p>${d?.specialization || ''}</p>
+            </div>
+          </div>
+        </div>`;
+    } catch (err) {
+      content.innerHTML = '<p style="color:var(--danger);">Error loading prescription.</p>';
+    }
+  }
+</script>
+</body>
+</html>

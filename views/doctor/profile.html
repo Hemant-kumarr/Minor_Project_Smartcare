@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Profile – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/doctor/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item" href="/doctor/appointments"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+      <a class="nav-item" href="/doctor/patients"><i class="fa-solid fa-users"></i> My Patients</a>
+      <a class="nav-item" href="/doctor/prescription"><i class="fa-solid fa-file-prescription"></i> Prescriptions</a>
+      <a class="nav-item" href="/doctor/availability"><i class="fa-solid fa-clock"></i> Availability</a>
+      <a class="nav-item active" href="/doctor/profile"><i class="fa-solid fa-circle-user"></i> Profile</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">?</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">doctor</div>
+      </div>
+    </div>
+  </aside>
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1>My Profile</h1>
+      </div>
+      <div class="topbar-actions"><div class="topbar-avatar" id="topbarAvatar">?</div></div>
+    </header>
+    <div class="dash-content">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+        <div class="card">
+          <div class="card-header"><h3>Professional Information</h3></div>
+          <div class="card-body">
+            <div id="docProfileAlert"></div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input type="tel" id="phone" class="form-control" maxlength="10" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Specialization</label>
+              <select id="specialization" class="form-control">
+                <option>General Physician</option><option>Cardiologist</option><option>Dermatologist</option>
+                <option>Pediatrician</option><option>Orthopedic</option><option>Neurologist</option>
+                <option>Psychiatrist</option><option>Gynecologist</option><option>ENT Specialist</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Qualification</label>
+                <input type="text" id="qualification" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Experience (yrs)</label>
+                <input type="number" id="experience" class="form-control" min="0" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Consultation Fee (₹)</label>
+                <input type="number" id="consultationFee" class="form-control" min="0" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Clinic / Hospital</label>
+                <input type="text" id="clinicName" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">About</label>
+              <textarea id="about" class="form-control" rows="3"></textarea>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="saveDoctorProfile()">
+              <i class="fa-solid fa-floppy-disk"></i> Save Changes
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Change Password</h3></div>
+          <div class="card-body">
+            <div id="pwdAlert"></div>
+            <div class="form-group"><label class="form-label">Current Password</label><input type="password" id="currentPwd" class="form-control" /></div>
+            <div class="form-group"><label class="form-label">New Password</label><input type="password" id="newPwd" class="form-control" /></div>
+            <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" id="confirmPwd" class="form-control" /></div>
+            <button class="btn btn-outline btn-block" onclick="changeDoctorPassword()"><i class="fa-solid fa-key"></i> Update Password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="/js/auth.js"></script>
+<script src="/js/doctor.js"></script>
+<script>
+  if (!requireAuth('doctor')) {}
+  else { populateSidebarUser(); initMobileSidebar(); loadDoctorProfile(); }
+</script>
+</body>
+</html>

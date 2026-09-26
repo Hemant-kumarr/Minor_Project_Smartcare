@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Appointments – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="dash-layout">
+
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/doctor/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item active" href="/doctor/appointments"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+      <a class="nav-item" href="/doctor/patients"><i class="fa-solid fa-users"></i> My Patients</a>
+      <a class="nav-item" href="/doctor/prescription"><i class="fa-solid fa-file-prescription"></i> Prescriptions</a>
+      <a class="nav-item" href="/doctor/availability"><i class="fa-solid fa-clock"></i> Availability</a>
+      <a class="nav-item" href="/doctor/profile"><i class="fa-solid fa-circle-user"></i> Profile</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">?</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">doctor</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1>Appointments</h1>
+      </div>
+      <div class="topbar-actions"><div class="topbar-avatar" id="topbarAvatar">?</div></div>
+    </header>
+
+    <div class="dash-content">
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Filter by Date</label>
+          <input type="date" id="dateFilter" class="form-control" style="max-width:200px;" />
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="clearDateFilter()">Clear</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchDoctorTab(this,'all')">All</button>
+        <button class="tab-btn" onclick="switchDoctorTab(this,'pending')">Pending</button>
+        <button class="tab-btn" onclick="switchDoctorTab(this,'confirmed')">Confirmed</button>
+        <button class="tab-btn" onclick="switchDoctorTab(this,'completed')">Completed</button>
+        <button class="tab-btn" onclick="switchDoctorTab(this,'cancelled')">Cancelled</button>
+      </div>
+
+      <div id="doctorApptsList">
+        <div class="loading-overlay"><div class="spinner spinner-dark"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Appointment Detail Modal -->
+<div class="modal-backdrop" id="apptDetailModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <h3>Appointment Details</h3>
+      <button class="modal-close" onclick="document.getElementById('apptDetailModal').classList.remove('open')">&times;</button>
+    </div>
+    <div class="modal-body" id="apptDetailContent"></div>
+    <div class="modal-footer" id="apptDetailActions"></div>
+  </div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/doctor.js"></script>
+<script>
+  let currentApptFilter = 'all';
+
+  if (!requireAuth('doctor')) {}
+  else {
+    populateSidebarUser();
+    initMobileSidebar();
+    loadDoctorAppointments('all');
+
+    document.getElementById('dateFilter').addEventListener('change', function() {
+      loadDoctorAppointments(currentApptFilter, this.value);
+    });
+  }
+
+  function switchDoctorTab(btn, filter) {
+    currentApptFilter = filter;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const date = document.getElementById('dateFilter').value;
+    loadDoctorAppointments(filter, date);
+  }
+
+  function clearDateFilter() {
+    document.getElementById('dateFilter').value = '';
+    loadDoctorAppointments(currentApptFilter, '');
+  }
+</script>
+</body>
+</html>

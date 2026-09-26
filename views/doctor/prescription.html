@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prescriptions – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="dash-layout">
+
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/doctor/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item" href="/doctor/appointments"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+      <a class="nav-item" href="/doctor/patients"><i class="fa-solid fa-users"></i> My Patients</a>
+      <a class="nav-item active" href="/doctor/prescription"><i class="fa-solid fa-file-prescription"></i> Prescriptions</a>
+      <a class="nav-item" href="/doctor/availability"><i class="fa-solid fa-clock"></i> Availability</a>
+      <a class="nav-item" href="/doctor/profile"><i class="fa-solid fa-circle-user"></i> Profile</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">?</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">doctor</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1 id="pageTitle">Prescriptions</h1>
+      </div>
+      <div class="topbar-actions"><div class="topbar-avatar" id="topbarAvatar">?</div></div>
+    </header>
+
+    <div class="dash-content">
+      <!-- View: list of prescriptions written -->
+      <div id="viewPrescriptions">
+        <div id="rxListContent">
+          <div class="loading-overlay"><div class="spinner spinner-dark"></div></div>
+        </div>
+      </div>
+
+      <!-- Write prescription form (shown when ?appt=ID in URL) -->
+      <div id="writePrescription" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-file-prescription" style="color:var(--primary);"></i> Write Prescription</h3>
+            <a href="/doctor/prescription" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Back</a>
+          </div>
+          <div class="card-body">
+            <div id="prescriptionAlert"></div>
+
+            <!-- Patient info (auto-filled) -->
+            <div id="patientInfoBox" style="background:var(--gray-50);border-radius:var(--radius);padding:14px;margin-bottom:20px;">
+              <div class="loading-overlay" style="padding:20px;"><div class="spinner spinner-dark"></div></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Diagnosis <span style="color:var(--danger)">*</span></label>
+              <textarea id="diagnosis" class="form-control" rows="2" placeholder="e.g. Viral fever with upper respiratory tract infection"></textarea>
+              <span class="form-error" id="diagnosisError"></span>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <h4 style="font-size:14px;font-weight:600;">Medicines</h4>
+              <button type="button" class="btn btn-outline btn-sm" onclick="addMedicineRow()"><i class="fa-solid fa-plus"></i> Add Medicine</button>
+            </div>
+            <div id="medicinesContainer"></div>
+
+            <div class="form-row" style="margin-top:16px;">
+              <div class="form-group">
+                <label class="form-label">Doctor's Notes</label>
+                <textarea id="doctorNotes" class="form-control" rows="2" placeholder="Additional instructions or observations…"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Follow-up Date</label>
+                <input type="date" id="followUpDate" class="form-control" />
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg" id="savePrescriptionBtn" onclick="savePrescription()">
+              <span id="saveRxText"><i class="fa-solid fa-floppy-disk"></i> Save Prescription</span>
+              <span id="saveRxSpinner" class="spinner" style="display:none;"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/doctor.js"></script>
+<script>
+  if (!requireAuth('doctor')) {}
+  else {
+    populateSidebarUser();
+    initMobileSidebar();
+    const apptId = new URLSearchParams(window.location.search).get('appt');
+    if (apptId) {
+      document.getElementById('viewPrescriptions').style.display = 'none';
+      document.getElementById('writePrescription').style.display = 'block';
+      document.getElementById('pageTitle').textContent = 'Write Prescription';
+      initPrescriptionForm(apptId);
+    } else {
+      loadDoctorPrescriptions();
+    }
+  }
+</script>
+</body>
+</html>

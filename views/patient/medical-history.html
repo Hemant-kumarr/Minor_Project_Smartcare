@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Medical History – SmartCare AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-brand"><div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>SmartCare <span>AI</span></a>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="/patient/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a class="nav-item" href="/patient/doctors"><i class="fa-solid fa-user-doctor"></i> Find Doctors</a>
+      <a class="nav-item" href="/patient/appointments"><i class="fa-solid fa-calendar-check"></i> My Appointments</a>
+      <a class="nav-item" href="/patient/symptom-checker"><i class="fa-solid fa-stethoscope"></i> Symptom Checker</a>
+      <a class="nav-item" href="/patient/health-assistant"><i class="fa-solid fa-robot"></i> AI Assistant</a>
+      <a class="nav-item" href="/patient/prescriptions"><i class="fa-solid fa-file-medical"></i> Prescriptions</a>
+      <a class="nav-item active" href="/patient/medical-history"><i class="fa-solid fa-clock-rotate-left"></i> Medical History</a>
+      <a class="nav-item" href="/patient/profile"><i class="fa-solid fa-circle-user"></i> Profile</a>
+      <a class="nav-item logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar"><span id="sidebarUserInit">?</span></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">patient</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fa-solid fa-bars"></i></button>
+        <h1>Medical History</h1>
+      </div>
+      <div class="topbar-actions"><div class="topbar-avatar" id="topbarAvatar">?</div></div>
+    </header>
+
+    <div class="dash-content">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showHistoryTab(this,'appts')">Appointments</button>
+        <button class="tab-btn" onclick="showHistoryTab(this,'rxs')">Prescriptions</button>
+      </div>
+
+      <div class="tab-panel active" id="tabAppts">
+        <div id="historyAppts"><div class="loading-overlay"><div class="spinner spinner-dark"></div></div></div>
+      </div>
+      <div class="tab-panel" id="tabRxs">
+        <div id="historyRxs"><div class="loading-overlay"><div class="spinner spinner-dark"></div></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/patient.js"></script>
+<script>
+  let historyLoaded = false;
+
+  if (!requireAuth('patient')) {}
+  else {
+    populateSidebarUser();
+    initMobileSidebar();
+    loadHistory();
+  }
+
+  function showHistoryTab(btn, tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(tab === 'appts' ? 'tabAppts' : 'tabRxs').classList.add('active');
+  }
+
+  async function loadHistory() {
+    try {
+      const res = await authFetch('/api/patients/history');
+      if (!res) return;
+      const data = await res.json();
+
+      const appts = data.appointments || [];
+      const rxs = data.prescriptions || [];
+
+      // Render appointments
+      const apptEl = document.getElementById('historyAppts');
+      if (!appts.length) {
+        apptEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📅</div>
+          <h3>No history yet</h3><p>Your appointment history will appear here.</p></div>`;
+      } else {
+        apptEl.innerHTML = `<div class="table-wrap"><table>
+          <thead><tr><th>Doctor</th><th>Specialization</th><th>Date</th><th>Time</th><th>Reason</th><th>Status</th></tr></thead>
+          <tbody>${appts.map(a => `<tr>
+            <td><strong>Dr. ${a.doctorId?.userId?.name || 'Doctor'}</strong></td>
+            <td>${a.doctorId?.specialization || ''}</td>
+            <td>${formatDate(a.date)}</td>
+            <td>${a.time}</td>
+            <td>${a.reason?.substring(0,40) || ''}</td>
+            <td>${statusBadge(a.status)}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>`;
+      }
+
+      // Render prescriptions
+      const rxEl = document.getElementById('historyRxs');
+      if (!rxs.length) {
+        rxEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💊</div>
+          <h3>No prescriptions yet</h3></div>`;
+      } else {
+        rxEl.innerHTML = `<div class="table-wrap"><table>
+          <thead><tr><th>Doctor</th><th>Date</th><th>Diagnosis</th><th>Medicines</th></tr></thead>
+          <tbody>${rxs.map(rx => `<tr>
+            <td><strong>Dr. ${rx.doctorId?.userId?.name || ''}</strong><br>
+              <span style="font-size:12px;color:var(--gray-400);">${rx.doctorId?.specialization || ''}</span></td>
+            <td>${formatDate(rx.createdAt)}</td>
+            <td>${rx.diagnosis}</td>
+            <td>${rx.medicines?.length || 0} medicine(s)</td>
+          </tr>`).join('')}</tbody>
+        </table></div>`;
+      }
+    } catch (err) {
+      document.getElementById('historyAppts').innerHTML = `<p style="color:var(--danger);padding:20px;">Error loading history.</p>`;
+    }
+  }
+</script>
+</body>
+</html>
